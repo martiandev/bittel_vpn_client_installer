@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 public class Setup 
 {
 	
+	public static final String MAX_STEPS = "11";
+	
 	Command installOpenVPN;
 	Command copyVPNClientToHome;
 	Command copyVPNStarter;
@@ -39,62 +41,63 @@ public class Setup
 			System.out.println("==================");
 
 			System.out.println("------------------");
-			System.out.println("Step 01");
+			System.out.println("Step 1/"+MAX_STEPS);
 			installOpenVPN();
 			System.out.println("------------------");
 			
 			System.out.println("------------------");
-			System.out.println("Step 02");
+			System.out.println("Step 2/"+MAX_STEPS);
 			createStarterScript() ;
 			System.out.println("------------------");
 			
 			System.out.println("------------------");
-			System.out.println("Step 03");
+			System.out.println("Step 3/"+MAX_STEPS);
 			copyVPNClientToHome();
 			System.out.println("------------------");
 			
 			System.out.println("------------------");
-			System.out.println("Step 04");
+			System.out.println("Step 4/"+MAX_STEPS);
 			copyVPNStarter();
 			System.out.println("------------------");
 
 			System.out.println("------------------");
-			System.out.println("Step 05");
+			System.out.println("Step 5/"+MAX_STEPS);
 			copyVPNService();
+			
 			System.out.println("------------------");
-
-			System.out.println("Step 06");
+			System.out.println("Step 6/"+MAX_STEPS);
 			System.out.println("------------------");
 			createVPNSysLink();
+			
 			System.out.println("------------------");
-
-			System.out.println("Step 07");
+			System.out.println("Step 7/"+MAX_STEPS);
 			System.out.println("------------------");
 			reloadDaemon();
 			System.out.println("------------------");
 
-			System.out.println("Step 08");
+			System.out.println("Step 8/"+MAX_STEPS);
 			System.out.println("------------------");			
 			enable();
+			
 			System.out.println("------------------");
-
-			System.out.println("Step 09");
+			System.out.println("Step 9/"+MAX_STEPS);
 			System.out.println("------------------");
 			startService();
+			
 			System.out.println("------------------");
-
-			System.out.println("Step 10");
+			System.out.println("Step 10/"+MAX_STEPS);
 			System.out.println("------------------");
 			createDBScript();
+			
 			System.out.println("------------------");
-
-			System.out.println("Step 11");
+			System.out.println("Step 11/"+MAX_STEPS);
 			System.out.println("------------------");
 			addCrontab();
+			
 			System.out.println("------------------");
-
 			System.out.println("Done and rebooting");
 			System.out.println("==================");
+			
 			reboot();
 
 			
