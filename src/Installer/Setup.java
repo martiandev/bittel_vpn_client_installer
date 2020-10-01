@@ -20,6 +20,12 @@ public class Setup
 	Command enable;
 	Command startService;
 	Command reboot;
+	
+	
+	Command changeDBScriptAccess;
+	Command addCrontab;
+	
+	
 	public Setup()
 	{
 		
@@ -28,42 +34,69 @@ public class Setup
 	{
 		try
 		{
-			System.out.println("------------------");
+			System.out.println("==================");
 			System.out.println("Starting setup");
+			System.out.println("==================");
+
 			System.out.println("------------------");
 			System.out.println("Step 01");
-			System.out.println("------------------");
 			installOpenVPN();
+			System.out.println("------------------");
+			
+			System.out.println("------------------");
 			System.out.println("Step 02");
-			System.out.println("------------------");
 			createStarterScript() ;
+			System.out.println("------------------");
+			
+			System.out.println("------------------");
 			System.out.println("Step 03");
-			System.out.println("------------------");
 			copyVPNClientToHome();
+			System.out.println("------------------");
+			
+			System.out.println("------------------");
 			System.out.println("Step 04");
-			System.out.println("------------------");
 			copyVPNStarter();
-			System.out.println("Step 05");
 			System.out.println("------------------");
+
+			System.out.println("------------------");
+			System.out.println("Step 05");
 			copyVPNService();
+			System.out.println("------------------");
+
 			System.out.println("Step 06");
 			System.out.println("------------------");
 			createVPNSysLink();
+			System.out.println("------------------");
+
 			System.out.println("Step 07");
 			System.out.println("------------------");
 			reloadDaemon();
-			
-			System.out.println("Step 08");
 			System.out.println("------------------");
+
+			System.out.println("Step 08");
+			System.out.println("------------------");			
 			enable();
-			
+			System.out.println("------------------");
+
 			System.out.println("Step 09");
 			System.out.println("------------------");
 			startService();
+			System.out.println("------------------");
+
+			System.out.println("Step 10");
+			System.out.println("------------------");
+			createDBScript();
+			System.out.println("------------------");
+
+			System.out.println("Step 11");
+			System.out.println("------------------");
+			addCrontab();
+			System.out.println("------------------");
+
 			System.out.println("Done and rebooting");
-			System.out.println("------------------");
+			System.out.println("==================");
 			reboot();
-			System.out.println("------------------");
+
 			
 		}
 		catch(Exception e)
@@ -75,8 +108,7 @@ public class Setup
 	{
 		System.out.println("Install OPENVPN");
 		installOpenVPN = new Command("sudo apt-get install -y openvpn");
-		CommandExecutor.get().execute(installOpenVPN);
-		
+		CommandExecutor.get().execute(installOpenVPN);	
 	}
 	
 	public void createStarterScript() throws Exception
@@ -90,12 +122,12 @@ public class Setup
 		BufferedReader reader = new BufferedReader(ir); 
 		System.out.println("Enter Home Directory:");
 		home = reader.readLine();
-		StringBuffer sb=new StringBuffer(); 
+		StringBuffer sb = new StringBuffer(); 
 		String line;  
 		while((line=br.readLine())!=null)  
 		{  
-		sb.append(line);      //appends line to string buffer  
-		sb.append("\n");     //line feed   
+			sb.append(line);  
+			sb.append("\n"); 
 		}  
 		content =sb.toString();
 		fileReader.close();
@@ -158,6 +190,91 @@ public class Setup
 		CommandExecutor.get().execute(startService);
 	}
 	
+	
+	
+	public void createDBScript() throws Exception
+	{
+		System.out.println("Creating db script");
+		FileReader fileReader = new FileReader(System.getProperty("user.dir")+System.getProperty("file.separator")+"dbback.sh"); 
+		BufferedReader br = new BufferedReader(fileReader); 
+		String content = null;
+		
+		String prefix 	= null;
+		String home 	= null;
+		String folder 	= null;
+		String schema 	= null;
+		
+	    InputStreamReader ir = new InputStreamReader(System.in);
+		BufferedReader reader = new BufferedReader(ir); 
+		
+		System.out.println("Enter File Prefix:");
+		prefix = reader.readLine();
+		
+		System.out.println("Enter Home Directory:");
+		home = reader.readLine();
+		
+		
+		System.out.println("Enter Remote Folder:");
+		folder = reader.readLine();
+		
+		System.out.println("Enter Schema to backup:");
+		schema = reader.readLine();
+		
+		StringBuffer sb=new StringBuffer(); 
+		String line;  
+		while((line=br.readLine())!=null)  
+		{  
+			sb.append(line);      //appends line to string buffer  
+			sb.append("\n");     //line feed   
+		}  
+		content =sb.toString();
+		fileReader.close();
+		content = content.replace("$HOME",home);
+		content = content.replace("$PREFIX",prefix);
+		content = content.replace("$FOLDER",folder);
+		content = content.replace("$SCHEMA",schema);
+		
+		System.out.println(content);
+		
+		FileOutputStream fos = new FileOutputStream(new File(System.getProperty("user.dir")+System.getProperty("file.separator")+"dbback.sh"));
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		byte[] bytes = content.getBytes();
+		bos.write(bytes);
+        bos.close();
+        fos.close();
+        changeDBScriptAccess = new Command("sudo chmod 777 "+System.getProperty("user.dir")+System.getProperty("file.separator")+"dbback.sh");
+        CommandExecutor.get().execute(changeDBScriptAccess);
+	}
+	
+
+	public void addCrontab() throws Exception
+	{
+		System.out.println("Adding cron job");
+		System.out.println("Enter Home Directory:");
+	    InputStreamReader ir = new InputStreamReader(System.in);
+		BufferedReader reader = new BufferedReader(ir); 
+		String home = reader.readLine();
+		File f = new File("/var/spool/cron/crontabs/root");
+		StringBuffer sb=new StringBuffer(); 
+		String line;
+		FileReader fileReader = new FileReader(f.getAbsolutePath()); 
+		BufferedReader br = new BufferedReader(fileReader);
+		while((line=br.readLine())!=null)  
+		{  
+			sb.append(line);
+			sb.append("\n");
+		}  
+		String content =sb.toString();
+		fileReader.close();
+		content = content+"\n"+"* * * * * cd "+home+"/installer/ && ./dbback.sh";
+		FileOutputStream fos = new FileOutputStream(f.getAbsolutePath());
+		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		byte[] bytes = content.getBytes();
+		bos.write(bytes);
+        bos.close();
+        fos.close();
+		
+	}
 	
 	public void reboot() throws Exception
 	{
